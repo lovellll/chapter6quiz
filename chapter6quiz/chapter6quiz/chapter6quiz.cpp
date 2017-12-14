@@ -14,9 +14,8 @@ int main()
 	std::array<Cards, 52> deckCards;
 	initializeCards(deckCards);
 	shuffleDeck(deckCards);
-	printDeck(deckCards);
-
+	printDeck(deckCards);		std::cout << "\n";//for debugging
+	playBlackjack(&deckCards[0]);
 
     return 0;
 }
-

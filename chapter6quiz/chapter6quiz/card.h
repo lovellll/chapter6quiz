@@ -48,3 +48,9 @@ int getRandomNumber(int min, int max);
 
 void shuffleDeck(std::array<Cards, 52>& deckCards);
 
+int getCardValue(const Cards & card);
+
+char getPlayerInput();
+
+bool playBlackjack(const Cards * cardPtr);
+

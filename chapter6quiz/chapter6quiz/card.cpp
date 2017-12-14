@@ -96,3 +96,89 @@ int getCardValue(const Cards &card)
 		case Ranks::ACE:	return 11;	
 		}
 }
+
+char getPlayerInput()
+{
+	while (true)
+	{
+		std::cout << "Do you want hits or stands? \n" << "Input H for hits,S for stands \n";
+		char playerInput;
+		std::cin >> playerInput;
+		std::cin.ignore(32767, '\n');
+		//check players choice
+		if (playerInput == 'h')
+			return 'h';
+		else if (playerInput == 's')
+			return 's';
+	}
+}
+
+//play the BlackJack and return if player is winner
+bool playBlackjack(const Cards *cardPtr)
+{
+	int dealerPoint(0);
+	int playerPoint(0);
+	int dealerValue(0);
+	int playerValue(0);
+	//Dealer gets one card
+	dealerValue += getCardValue(*cardPtr++);
+	std::cout << "Delaer draw one card. \nDealer's value is now " << dealerValue << "\n";
+	//Player gets two cards 
+	playerValue += getCardValue(*cardPtr++);
+	playerValue += getCardValue(*cardPtr++);
+	//Player's turn
+	std::cout << "Delaer draw two cards. \nYour value is now " << playerValue << "\n";
+	while (playerValue <= 21)
+	{
+		char playerChoice;
+		playerChoice = getPlayerInput();
+		if (playerChoice == 'h')
+		{
+			playerValue += getCardValue(*cardPtr++);
+			std::cout << "You get one card and your value is now " << playerValue << "\n";
+			if (playerValue > 21)
+			{
+				//busted,and lose.Return false
+				std::cout << "You bust, Gameover \n";
+				return false;
+			}
+		}
+		if (playerChoice == 's')
+		{
+			std::cout << "You choose to stand and your value is now " << playerValue << "\n";
+			break;
+		}
+	}
+
+	//Dealer's turn
+	std::cout << "Now dealer is playing \n";
+	while (dealerValue < 17)
+	{
+		std::cout << "Dealer chose to hits another card! \n";
+		dealerValue += getCardValue(*cardPtr++);
+		if (dealerValue > 21)
+		{
+			std::cout << "dealer's value is now " << dealerValue << ". He busted. You won! \n";
+			return true;
+		}
+	}
+	std::cout << "Dealer stands. Now compare. \n";
+	//both's turns done.Now compare
+	std::cout << "Dealer's final value is now " << dealerValue << "\n";
+	std::cout << "Player's final value is now " << playerValue << "\n";
+	if (playerValue > dealerValue)
+	{
+		std::cout << "You won! \n";
+		return true;
+	}
+	else if (playerValue < dealerValue)
+	{
+		std::cout << "You lost.Good luck next time! \n";
+		return false;
+	}
+	else if (playerValue == dealerValue)
+	{
+		std::cout << "You draw!What a game. \n";
+		return false;
+	}
+}
