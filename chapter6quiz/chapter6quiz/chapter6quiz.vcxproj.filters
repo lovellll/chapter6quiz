@@ -24,12 +24,18 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="card.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="chapter6quiz.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="card.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
