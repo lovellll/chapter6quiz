@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include <array>
+#include <vector>
 
 enum class Ranks
 {
@@ -28,6 +29,7 @@ enum class Suits
 	SPADES,
 };
 
+
 struct Cards
 {
 	Ranks rank;
@@ -48,9 +50,16 @@ int getRandomNumber(int min, int max);
 
 void shuffleDeck(std::array<Cards, 52>& deckCards);
 
-int getCardValue(const Cards & card);
+int getCardValue(const Cards & card, bool isAce_11);
 
 char getPlayerInput();
 
-bool playBlackjack(const Cards * cardPtr);
+void drawCard(std::vector<Cards>& hands, const Cards *& cardPtr);
+
+int calcHands(const std::vector<Cards>& hands);
+
+int betCredit();
+
+int playBlackjack(const Cards * cardPtr);
+
 

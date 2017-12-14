@@ -4,6 +4,7 @@
 #include "card.h"
 #include <cstdlib> // for rand() and srand()
 #include <ctime> // for time()
+#include <vector>
 
 
 void printCard(const Cards &card)
@@ -83,25 +84,42 @@ void shuffleDeck(std::array<Cards, 52> &deckCards)
 
 }
 
-int getCardValue(const Cards &card)
+int getCardValue(const Cards &card,bool isAce_11)
 {
-	if (static_cast<int>(card.rank) <= 8)
-		return static_cast<int>(card.rank) + 2;
+	if(isAce_11)
+	{
+		if (static_cast<int>(card.rank) <= 8)
+			return static_cast<int>(card.rank) + 2;
+		else
+			switch (card.rank)
+			{
+			case Ranks::JACK:	return 10;
+			case Ranks::QUEEN:	return 10;
+			case Ranks::KING:	return 10;
+			case Ranks::ACE:	return 11;
+			}
+	}
 	else
-		switch (card.rank)
-		{
-		case Ranks::JACK:	return 10;	
-		case Ranks::QUEEN:	return 10;	
-		case Ranks::KING:	return 10;	
-		case Ranks::ACE:	return 11;	
-		}
+	{
+		if (static_cast<int>(card.rank) <= 8)
+			return static_cast<int>(card.rank) + 2;
+		else
+			switch (card.rank)
+			{
+			case Ranks::JACK:	return 10;
+			case Ranks::QUEEN:	return 10;
+			case Ranks::KING:	return 10;
+			case Ranks::ACE:	return 1;
+			}
+	}
+	
 }
 
 char getPlayerInput()
 {
 	while (true)
 	{
-		std::cout << "Do you want hits or stands? \n" << "Input H for hits,S for stands \n";
+		std::cout << "Do you want hits or stands? \n" << "Input h for hits,s for stands \n";
 		char playerInput;
 		std::cin >> playerInput;
 		std::cin.ignore(32767, '\n');
@@ -113,72 +131,110 @@ char getPlayerInput()
 	}
 }
 
-//play the BlackJack and return if player is winner
-bool playBlackjack(const Cards *cardPtr)
+void drawCard(std::vector<Cards> &hands,const Cards *&cardPtr)
 {
-	int dealerPoint(0);
-	int playerPoint(0);
+	int nowSize = hands.size();
+	hands.resize(nowSize + 1);
+	hands[nowSize] = *cardPtr++;
+}
+
+int calcHands(const std::vector<Cards> &hands)
+{
+	int sum(0);
+	//ace = 11
+	for (const auto &ref : hands)
+		sum += getCardValue(ref, true);
+	if (sum <= 21)
+		return sum;
+	else
+	{
+		//ace =1
+		sum = 0;
+		for (const auto &ref : hands)
+			sum += getCardValue(ref, false);
+		return sum;
+	}
+
+}
+
+int betCredit()
+{
+	std::cout << "How much do you want to bet? \n";
+	int bet;
+	std::cin >> bet;
+	std::cin.ignore(32767, '\n');
+	return bet;
+}
+
+//play the BlackJack and return if player is winner
+int playBlackjack(const Cards *cardPtr)
+{
+	//initialize some storage
 	int dealerValue(0);
 	int playerValue(0);
-	//Dealer gets one card
-	dealerValue += getCardValue(*cardPtr++);
-	std::cout << "Delaer draw one card. \nDealer's value is now " << dealerValue << "\n";
+	std::vector<Cards> dealerHands{0};
+	std::vector<Cards> playerHands{0};
+	//dealer draw first card
+	drawCard(dealerHands, cardPtr);
+	std::cout << "Delaer draw one card. \nDealer's value is now " << calcHands(dealerHands) << "\n";
 	//Player gets two cards 
-	playerValue += getCardValue(*cardPtr++);
-	playerValue += getCardValue(*cardPtr++);
+	drawCard(playerHands, cardPtr);
+	drawCard(playerHands, cardPtr);
 	//Player's turn
-	std::cout << "Delaer draw two cards. \nYour value is now " << playerValue << "\n";
-	while (playerValue <= 21)
+	std::cout << "You draw two cards. \nYour value is now " << calcHands(playerHands) << "\n";
+	while (calcHands(playerHands) <= 21)
 	{
 		char playerChoice;
 		playerChoice = getPlayerInput();
 		if (playerChoice == 'h')
 		{
-			playerValue += getCardValue(*cardPtr++);
-			std::cout << "You get one card and your value is now " << playerValue << "\n";
-			if (playerValue > 21)
+			drawCard(playerHands, cardPtr);
+			std::cout << "You get one card and your value is now " << calcHands(playerHands) << "\n";
+			if (calcHands(playerHands) > 21)
 			{
 				//busted,and lose.Return false
-				std::cout << "You bust, Gameover \n";
-				return false;
+				std::cout << "You bust, GAME OVER! \n";
+				return -1;
 			}
 		}
 		if (playerChoice == 's')
 		{
-			std::cout << "You choose to stand and your value is now " << playerValue << "\n";
+			std::cout << "You choose to stand and your value is now " << calcHands(playerHands) << "\n";
 			break;
 		}
 	}
 
 	//Dealer's turn
 	std::cout << "Now dealer is playing \n";
-	while (dealerValue < 17)
+	while (calcHands(dealerHands) < 17)
 	{
 		std::cout << "Dealer chose to hits another card! \n";
-		dealerValue += getCardValue(*cardPtr++);
-		if (dealerValue > 21)
+		drawCard(dealerHands, cardPtr);
+		if (calcHands(dealerHands) > 21)
 		{
-			std::cout << "dealer's value is now " << dealerValue << ". He busted. You won! \n";
-			return true;
+			std::cout << "dealer's value is now " << calcHands(dealerHands) << ". He busted. You won! \n";
+			return 1;
 		}
 	}
 	std::cout << "Dealer stands. Now compare. \n";
 	//both's turns done.Now compare
-	std::cout << "Dealer's final value is now " << dealerValue << "\n";
-	std::cout << "Player's final value is now " << playerValue << "\n";
+	std::cout << "Dealer's final value is now " << calcHands(dealerHands) << "\n";
+	std::cout << "Player's final value is now " << calcHands(playerHands) << "\n";
+	dealerValue = calcHands(dealerHands);
+	playerValue = calcHands(playerHands);
 	if (playerValue > dealerValue)
 	{
 		std::cout << "You won! \n";
-		return true;
+		return 1;
 	}
 	else if (playerValue < dealerValue)
 	{
 		std::cout << "You lost.Good luck next time! \n";
-		return false;
+		return -1;
 	}
 	else if (playerValue == dealerValue)
 	{
 		std::cout << "You draw!What a game. \n";
-		return false;
+		return 0;
 	}
 }
